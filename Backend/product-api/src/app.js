@@ -5,6 +5,8 @@ const morgan=require("morgan");
 
 const productRoutes=require("./routes/product.routes");
 const categoryRoutes=require("./routes/category.routes");
+const tableRestaurantRoutes=require("./routes/tableRestaurant.routes");
+
 
 const app=express();
 
@@ -18,5 +20,6 @@ app.use(express.json());
 
 app.use("/sip/productos",productRoutes);
 app.use("/sip/categorias",categoryRoutes);
+app.use("/sip/mesas",tableRestaurantRoutes);
 
 module.exports=app;
