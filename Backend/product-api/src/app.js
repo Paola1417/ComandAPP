@@ -4,6 +4,7 @@ const helmet=require("helmet");
 const morgan=require("morgan");
 
 const productRoutes=require("./routes/product.routes");
+const categoryRoutes=require("./routes/category.routes");
 
 const app=express();
 
@@ -15,6 +16,7 @@ app.use(morgan("dev"));
 
 app.use(express.json());
 
-app.use("/api/productos",productRoutes);
+app.use("/sip/productos",productRoutes);
+app.use("/sip/categorias",categoryRoutes);
 
 module.exports=app;
