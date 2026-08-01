@@ -7,27 +7,22 @@ const Product = sequelize.define(
   {
     id: {
       type: DataTypes.INTEGER,
-
       autoIncrement: true,
-
       primaryKey: true,
     },
 
     tipo: {
       type: DataTypes.STRING,
-
       allowNull: false,
     },
 
     nombre: {
       type: DataTypes.STRING,
-
       allowNull: false,
     },
 
     precio: {
       type: DataTypes.DECIMAL(10, 2),
-
       allowNull: false,
     },
 
@@ -37,6 +32,12 @@ const Product = sequelize.define(
 
     imagen: {
       type: DataTypes.STRING,
+    },
+
+    categoryId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      field: "categoryId",
     },
   },
   {

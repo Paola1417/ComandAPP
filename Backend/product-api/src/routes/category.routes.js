@@ -6,6 +6,10 @@ const controller = require("../controllers/category.controller");
 
 router.get("/", controller.getCategories);
 
+router.get("/:categoryId/productos", controller.getCategoryProducts);
+
+router.post("/:categoryId/productos", controller.createCategoryProduct);
+
 router.get("/:id", controller.getCategory);
 
 router.post("/", controller.createCategory);
