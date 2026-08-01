@@ -10,6 +10,8 @@ const tableRestaurantRoutes=require("./routes/tableRestaurant.routes");
 
 const app=express();
 
+const appname= "capp";
+
 app.use(cors());
 
 app.use(helmet());
@@ -18,8 +20,8 @@ app.use(morgan("dev"));
 
 app.use(express.json());
 
-app.use("/sip/productos",productRoutes);
-app.use("/sip/categorias",categoryRoutes);
-app.use("/sip/mesas",tableRestaurantRoutes);
+app.use(`/${appname}/productos`,productRoutes);
+app.use(`/${appname}/categorias`,categoryRoutes);
+app.use(`/${appname}/mesas`,tableRestaurantRoutes);
 
 module.exports=app;
