@@ -6,6 +6,7 @@ const morgan=require("morgan");
 const productRoutes=require("./routes/product.routes");
 const categoryRoutes=require("./routes/category.routes");
 const tableRestaurantRoutes=require("./routes/tableRestaurant.routes");
+const orderRoutes=require("./routes/order.routes");
 
 
 const app=express();
@@ -23,5 +24,6 @@ app.use(express.json());
 app.use(`/${appname}/productos`,productRoutes);
 app.use(`/${appname}/categorias`,categoryRoutes);
 app.use(`/${appname}/mesas`,tableRestaurantRoutes);
+app.use(`/${appname}/ordenes`,orderRoutes);
 
 module.exports=app;
