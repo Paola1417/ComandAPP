@@ -21,11 +21,6 @@ const TableRestaurant = sequelize.define(
             type: DataTypes.STRING,
             allowNull: false,
         },
-
-        pedidos: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
     },
     {
         tableName: "mesas",

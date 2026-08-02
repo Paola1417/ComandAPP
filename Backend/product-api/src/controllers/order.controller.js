@@ -18,9 +18,13 @@ exports.getOrder = async (req, res) => {
 };
 
 exports.createOrder = async (req, res) => {
+  try {
     const order = await service.createOrder(req.body);
     res.status(201).json(order);
-}
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
 
 exports.updateOrder = async (req, res) => {
     const order = await service.updateOrder(req.params.id, req.body);
