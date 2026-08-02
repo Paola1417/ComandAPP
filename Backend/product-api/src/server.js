@@ -6,6 +6,8 @@ const initializeDatabase = require("./config/initDatabase");
 
 require("dotenv").config();
 
+require("./models/associations");
+
 async function startServer() {
   try {
     // Crear BD si no existe
@@ -14,7 +16,7 @@ async function startServer() {
 
     // Crear tablas
 
-    await sequelize.sync();
+    await sequelize.sync({ alter: true });
 
     console.log("Tablas verificadas correctamente.");
 
