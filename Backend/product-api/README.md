@@ -1,4 +1,4 @@
-# Product API - Sistema Inteligente de Pedidos
+# Product API - ComandAPP
 
 API REST para la gestión de productos, categorías, mesas y pedidos en un restaurante.
 
