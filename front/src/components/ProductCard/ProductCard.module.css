@@ -1,0 +1,69 @@
+.card-producto {
+  background: var(--claro);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: var(--sombra-suave);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card-producto:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--sombra-fuerte);
+}
+
+.card-producto img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+}
+
+.img-placeholder {
+  width: 100%;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  opacity: 0.3;
+  background: var(--gris-claro);
+}
+
+.card-producto-info {
+  padding: 14px;
+}
+
+.card-producto-info h4 {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.card-producto-info p {
+  font-size: 11px;
+  color: var(--gris);
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.card-producto-info .precio {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primario);
+  margin-bottom: 10px;
+}
+
+.btn-agregar {
+  width: 100%;
+  padding: 10px;
+  background: var(--primario);
+  color: var(--claro);
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background 0.3s;
+}
+
+.btn-agregar:hover {
+  background: var(--primario-oscuro);
+}
