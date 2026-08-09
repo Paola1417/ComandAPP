@@ -1,34 +1,26 @@
-import React, { useState, useContext } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
-import { useCart } from '../../context/CartContext';
-import styles from './NavBar.module.css';
+import React, { useState, useContext } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useCart } from "../../context/CartContext";
+import styles from "./NavBar.module.css";
 
 const NavBar = () => {
   const { itemCount } = useCart();
   const [showCart, setShowCart] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    if (window.confirm('¿Está seguro que desea cerrar sesión?')) {
-      alert('Sesión cerrada correctamente');
-      navigate('/');
-      setShowCart(false);
-    }
-  };
-
   const toggleCart = () => {
     setShowCart(!showCart);
     if (!showCart) {
-      navigate('/');
+      navigate("/");
     }
   };
 
   return (
     <header className={styles.header}>
-      <div className={styles['header-left']}>
+      <div className={styles["header-left"]}>
         <div className={styles.logo}>
           <svg
-            className={styles['logo-img']}
+            className={styles["logo-img"]}
             viewBox="0 0 100 100"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
@@ -63,28 +55,27 @@ const NavBar = () => {
             />
             <path d="M65 50L75 42L82 48L72 56Z" fill="#ff6b00" />
           </svg>
-          <div className={styles['logo-text']}>
-            <h1>SISTEMA INTELIGENTE DE PEDIDOS</h1>
-            <span>Restaurante Fast Casual</span>
+          <div className={styles["logo-text"]}>
+            <h1>ComandAPP</h1>
           </div>
         </div>
       </div>
       <nav className={styles.nav}>
-        <NavLink to="/" className={styles['nav-link']} end>
+        <NavLink to="/" className={styles["nav-link"]} end>
           Inicio
         </NavLink>
-        <NavLink to="/menu" className={styles['nav-link']}>
+        <NavLink to="/menu" className={styles["nav-link"]}>
           Menú
         </NavLink>
-        <NavLink to="/pedidos" className={styles['nav-link']}>
+        <NavLink to="/mesas" className={styles["nav-link"]}>
+          Mesas
+        </NavLink>
+        <NavLink to="/pedidos" className={styles["nav-link"]}>
           Pedidos
         </NavLink>
-        <NavLink to="/reportes" className={styles['nav-link']}>
+        <NavLink to="/reportes" className={styles["nav-link"]}>
           Reportes
         </NavLink>
-        <button className={styles['btn-cerrar']} onClick={handleLogout}>
-          Cerrar Sesión
-        </button>
       </nav>
     </header>
   );

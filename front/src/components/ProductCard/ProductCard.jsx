@@ -2,7 +2,7 @@ import React from 'react';
 import { useCart } from '../../context/CartContext';
 import styles from './ProductCard.module.css';
 
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, editable = false, onEdit, onDelete }) => {
   const { addItem } = useCart();
 
   const handleAdd = () => {
@@ -11,6 +11,26 @@ const ProductCard = ({ product }) => {
 
   return (
     <div className={styles['card-producto']}>
+      {editable && (
+        <div className={styles['acciones']}>
+          <button
+            type="button"
+            className={styles['btn-accion']}
+            onClick={onEdit}
+            title="Editar producto"
+          >
+            ✏️
+          </button>
+          <button
+            type="button"
+            className={styles['btn-accion']}
+            onClick={onDelete}
+            title="Eliminar producto"
+          >
+            🗑️
+          </button>
+        </div>
+      )}
       {product.imagen ? (
         <img src={product.imagen} alt={product.nombre} loading="lazy" />
       ) : (
