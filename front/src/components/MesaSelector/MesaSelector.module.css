@@ -1,0 +1,46 @@
+.mesa-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.mesa-selector label {
+  font-weight: 600;
+  color: var(--texto);
+  white-space: nowrap;
+}
+
+.select {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--gris-claro);
+  border-radius: 8px;
+  background: var(--claro);
+  font-size: 13px;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.select:focus {
+  outline: 2px solid var(--primario);
+  outline-offset: 1px;
+}
+
+.select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.loading {
+  color: var(--gris);
+  font-style: italic;
+  font-size: 13px;
+}
+
+.error {
+  color: var(--error);
+  font-size: 12px;
+}

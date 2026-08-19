@@ -1,0 +1,136 @@
+.mesas-container {
+  padding: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.mesas-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.header-title h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--texto);
+  margin-bottom: 8px;
+}
+
+.header-title p {
+  color: var(--gris);
+  font-size: 14px;
+}
+
+.btn-agregar {
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--claro);
+  background: var(--primario);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.btn-agregar:hover {
+  background: var(--primario-oscuro);
+}
+
+.loading-state,
+.error-state {
+  padding: 40px 20px;
+  text-align: center;
+  font-size: 16px;
+  color: var(--gris);
+}
+
+.error-state {
+  color: var(--error);
+}
+
+.grid-mesas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.mesa-card {
+  background: var(--claro);
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: var(--sombra-suave);
+  border-left: 4px solid var(--primario);
+}
+
+.mesa-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.mesa-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primario);
+  margin: 0;
+}
+
+.mesa-acciones {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-icono {
+  padding: 6px 10px;
+  font-size: 14px;
+  background: transparent;
+  border: 1px solid var(--gris-claro);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn-icono:hover {
+  background: var(--claro);
+}
+
+.mesa-mesero {
+  font-size: 13px;
+  color: var(--gris);
+  margin-bottom: 8px;
+}
+
+.mesa-fecha {
+  font-size: 11px;
+  color: var(--gris);
+  text-align: right;
+}
+
+.mesas-vacio {
+  text-align: center;
+  padding: 60px 20px;
+  background: var(--claro);
+  border-radius: 16px;
+  grid-column: 1 / -1;
+}
+
+.icono-grande {
+  font-size: 72px;
+  margin-bottom: 16px;
+  opacity: 0.4;
+}
+
+.mesas-vacio h3 {
+  font-size: 20px;
+  color: var(--texto);
+  margin-bottom: 8px;
+}
+
+.mesas-vacio p {
+  color: var(--gris);
+  font-size: 14px;
+}

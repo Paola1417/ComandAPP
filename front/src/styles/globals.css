@@ -1,0 +1,50 @@
+@import url('https://cdn.jsdelivr.net/npm/fontsource-poppins@5.0.0/index.css');
+
+:root {
+  --primario: #ff6b00;
+  --primario-oscuro: #e65100;
+  --secundario: #2c2c2c;
+  --claro: #ffffff;
+  --fondo: #f4f6f8;
+  --texto: #333639;
+  --gris: #9e9e9e;
+  --gris-claro: #e0e0e0;
+  --exito: #4caf50;
+  --error: #f44336;
+  --sombra-suave: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --sombra-fuerte: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--fondo);
+  color: var(--texto);
+  min-height: 100vh;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  padding: 0;
+}
+
+ul {
+  list-style: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}

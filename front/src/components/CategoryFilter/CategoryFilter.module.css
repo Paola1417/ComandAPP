@@ -1,0 +1,49 @@
+.sidebar {
+  background: var(--claro);
+  padding: 20px 12px;
+  border-right: 1px solid var(--gris-claro);
+}
+
+.sidebar h3 {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: var(--texto);
+}
+
+.categoria-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.categoria-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--texto);
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.categoria-btn:hover {
+  background: #fff3e8;
+}
+
+.categoria-btn.activo {
+  background: var(--primario);
+  color: var(--claro);
+}
+
+.icono {
+  font-size: 18px;
+  width: 24px;
+  text-align: center;
+}
