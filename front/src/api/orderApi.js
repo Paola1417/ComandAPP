@@ -152,6 +152,11 @@ export const createOrderPublica = async (token, orderData) => {
   return response.data;
 };
 
+export const updateOrderPublica = async (token, orderId, orderData) => {
+  const response = await api.put(`/pedido/${token}/${orderId}`, orderData);
+  return response.data;
+};
+
 export const fetchEstadoPedido = async (token) => {
   const response = await api.get(`/pedido/${token}/estado`);
   return response.data;

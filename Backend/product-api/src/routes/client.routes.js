@@ -14,6 +14,8 @@ router.get("/:token/pedidos", clientController.getAllOrdersByToken);
 
 router.post("/:token", clientController.createClientOrder);
 
+router.put("/:token/:orderId", clientController.updateClientOrder);
+
 router.get("/:token/estado", clientController.getOrderState);
 
 module.exports = router;

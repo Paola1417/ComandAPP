@@ -4,6 +4,7 @@ import {
   fetchMesaByToken,
   fetchProductosPublicos,
   createOrderPublica,
+  updateOrderPublica,
   fetchEstadoPedido,
 } from '../../api/orderApi';
 import { formatCurrency, getCategoryIcon } from '../../utils/format';
@@ -28,6 +29,8 @@ const CustomerMenu = () => {
   const [pedidoConfirmado, setPedidoConfirmado] = useState(null);
   const [observaciones, setObservaciones] = useState('');
   const [estadoActual, setEstadoActual] = useState(null);
+  const [pedidoActualId, setPedidoActualId] = useState(null);
+  const [ultimaAccion, setUltimaAccion] = useState('crear');
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -46,8 +49,27 @@ const CustomerMenu = () => {
         try {
           const estado = await fetchEstadoPedido(token);
           setEstadoActual(estado);
+          if (estado && estado.estado === 'pendiente') {
+            setPedidoActualId(estado.id);
+            setCartItems(
+              estado.items.map((item) => ({
+                id: item.productId,
+                nombre: item.productName,
+                precio: Number(item.precio),
+                cantidad: item.cantidad,
+                imagen: null,
+                tipo: '',
+              }))
+            );
+            setObservaciones(estado.observaciones || '');
+          } else {
+            setPedidoActualId(null);
+            setCartItems([]);
+          }
         } catch {
           setEstadoActual(null);
+          setPedidoActualId(null);
+          setCartItems([]);
         }
       } catch (err) {
         setError(err.response?.data?.message || err.message || 'Error al cargar los datos');
@@ -109,11 +131,23 @@ const CustomerMenu = () => {
         productId: item.id,
         cantidad: item.cantidad,
       }));
-      const order = await createOrderPublica(token, {
+      const payload = {
         items,
         observaciones: observaciones || '',
-      });
+      };
+
+      let order;
+      if (pedidoActualId) {
+        order = await updateOrderPublica(token, pedidoActualId, payload);
+        setUltimaAccion('actualizar');
+      } else {
+        order = await createOrderPublica(token, payload);
+        setUltimaAccion('crear');
+      }
+
       setPedidoConfirmado(order);
+      setEstadoActual(order);
+      setPedidoActualId(null);
       setCartItems([]);
       setObservaciones('');
     } catch (err) {
@@ -137,7 +171,7 @@ const CustomerMenu = () => {
       <div className={styles['confirmacion-container']}>
         <div className={styles['confirmacion-card']}>
           <div className={styles['confirmacion-icon']}>✅</div>
-          <h2>¡Pedido Confirmado!</h2>
+          <h2>{ultimaAccion === 'actualizar' ? '¡Pedido Actualizado!' : '¡Pedido Confirmado!'}</h2>
           <p className={styles['pedido-num']}>Pedido #{pedidoConfirmado.id}</p>
           <p className={styles['pedido-estado']}>Estado: {estado}</p>
           <p className={styles['pedido-total']}>Total: {formatCurrency(pedidoConfirmado.total)}</p>
@@ -149,7 +183,7 @@ const CustomerMenu = () => {
               setObservaciones('');
             }}
           >
-            Realizar otro pedido
+            {ultimaAccion === 'actualizar' ? 'Volver al menú' : 'Realizar otro pedido'}
           </button>
         </div>
       </div>
@@ -166,8 +200,21 @@ const CustomerMenu = () => {
       {estadoActual && (
         <div className={styles['estado-pedido']}>
           <h3>Tu pedido actual</h3>
+          <p><strong>Pedido:</strong> #{estadoActual.id}</p>
           <p><strong>Estado:</strong> {ESTADOS_LABELS[estadoActual.estado] || estadoActual.estado}</p>
+          {estadoActual.items?.length > 0 && (
+            <ul className={styles['estado-items']}>
+              {estadoActual.items.map((item) => (
+                <li key={item.id}>
+                  {item.cantidad} × {item.productName} — {formatCurrency(item.precio * item.cantidad)}
+                </li>
+              ))}
+            </ul>
+          )}
           <p><strong>Total:</strong> {formatCurrency(estadoActual.total)}</p>
+          {estadoActual.estado === 'pendiente' && (
+            <p className={styles['estado-edit-note']}>Este pedido aún puede modificarse en el carrito.</p>
+          )}
         </div>
       )}
 
@@ -278,7 +325,13 @@ const CustomerMenu = () => {
                 onClick={confirmarPedido}
                 disabled={submitting}
               >
-                {submitting ? 'Confirmando...' : 'Confirmar Pedido'}
+                {submitting
+                  ? pedidoActualId
+                    ? 'Actualizando...'
+                    : 'Confirmando...'
+                  : pedidoActualId
+                    ? 'Actualizar Pedido'
+                    : 'Confirmar Pedido'}
               </button>
             </div>
           )}

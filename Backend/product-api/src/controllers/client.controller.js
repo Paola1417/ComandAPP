@@ -71,7 +71,7 @@ exports.getOrderState = async (req, res, next) => {
   try {
     const order = await orderService.getLastOrderByToken(req.params.token);
 
-    if (!order) {
+    if (!order || order.estado === "cancelado") {
       return res.status(404).json({
         message: "No hay pedidos para esta mesa",
       });
@@ -87,7 +87,27 @@ exports.getOrderState = async (req, res, next) => {
         id: order.mesa.id,
         numeroMesa: order.mesa.numeroMesa,
       },
+      items: order.items.map((item) => ({
+        id: item.id,
+        productId: item.productId,
+        productName: item.productName,
+        cantidad: item.cantidad,
+        precio: item.precio,
+      })),
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.updateClientOrder = async (req, res, next) => {
+  try {
+    const order = await orderService.updateOrderByToken(
+      req.params.token,
+      req.params.orderId,
+      req.body
+    );
+    res.json(order);
   } catch (error) {
     next(error);
   }

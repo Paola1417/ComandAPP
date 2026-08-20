@@ -199,6 +199,115 @@ const createOrderByToken = async (token, data) => {
   });
 };
 
+const updateOrderByToken = async (token, orderId, data) => {
+  const mesa = await TableRestaurant.findOne({ where: { accessToken: token } });
+
+  if (!mesa) {
+    const error = new Error("Token de mesa inválido o mesa no encontrada");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const order = await Order.findOne({
+    where: { id: orderId, tableRestaurantId: mesa.id },
+  });
+
+  if (!order) {
+    const error = new Error("Pedido no encontrado");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (order.estado !== "pendiente") {
+    const error = new Error("El pedido ya no puede modificarse");
+    error.statusCode = 403;
+    throw error;
+  }
+
+  const { observaciones, items } = data;
+
+  if (!Array.isArray(items) || items.length === 0) {
+    const error = new Error("La orden debe contener al menos un item");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const productIds = items.map((item) => item.productId);
+  const productos = await Product.findAll({
+    where: {
+      id: productIds,
+    },
+  });
+
+  const productosPorId = productos.reduce((acc, producto) => {
+    acc[producto.id] = producto;
+    return acc;
+  }, {});
+
+  const orderItems = items.map((item) => {
+    const product = productosPorId[item.productId];
+    if (!product) {
+      const error = new Error(`Producto con id ${item.productId} no encontrado`);
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const cantidad = Number(item.cantidad ?? item.quantity ?? 0);
+    if (!Number.isInteger(cantidad) || cantidad < 1) {
+      const error = new Error(`Cantidad inválida para producto ${item.productId}`);
+      error.statusCode = 400;
+      throw error;
+    }
+
+    return {
+      productId: product.id,
+      productName: product.nombre,
+      cantidad,
+      precio: product.precio,
+    };
+  });
+
+  return sequelize.transaction(async (transaction) => {
+    await OrderItem.destroy({ where: { orderId: order.id }, transaction });
+
+    for (const item of orderItems) {
+      await OrderItem.create({ ...item, orderId: order.id }, { transaction });
+    }
+
+    const total = orderItems.reduce((sum, item) => {
+      return sum + Number(item.precio) * Number(item.cantidad);
+    }, 0);
+
+    await order.update(
+      { observaciones, total: Number(total.toFixed(2)) },
+      { transaction }
+    );
+
+    const updated = await Order.findByPk(order.id, {
+      transaction,
+      include: [
+        {
+          model: TableRestaurant,
+          as: "mesa",
+        },
+        {
+          model: OrderItem,
+          as: "items",
+          include: [
+            {
+              model: Product,
+              as: "producto",
+              attributes: ["id", "nombre", "tipo", "precio"],
+            },
+          ],
+        },
+      ],
+    });
+
+    return updated;
+  });
+};
+
 const getLastOrderByToken = async (token) => {
   const mesa = await TableRestaurant.findOne({ where: { accessToken: token } });
 
@@ -290,6 +399,7 @@ module.exports = {
   createOrderByToken,
   getLastOrderByToken,
   getAllOrdersByToken,
+  updateOrderByToken,
   updateOrder,
   deleteOrder,
 };
