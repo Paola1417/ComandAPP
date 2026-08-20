@@ -85,6 +85,13 @@ export const deleteProduct = async (id) => {
   return response.data;
 };
 
+export const uploadProductImage = async (file) => {
+  const formData = new FormData();
+  formData.append('imagen', file);
+  const response = await api.post('/productos/imagen', formData);
+  return response.data;
+};
+
 export const createTable = async (data) => {
   const response = await api.post('/mesas', data);
   return response.data;

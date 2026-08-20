@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import React from 'react';
 import NavBar from './components/NavBar/NavBar';
 import Inicio from './pages/Inicio/Inicio';
@@ -11,22 +11,12 @@ import Kitchen from './pages/Kitchen/Kitchen';
 import CustomerMenu from './pages/CustomerMenu/CustomerMenu';
 import SeleccionMesa from './pages/SeleccionMesa/SeleccionMesa';
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
-import { useAuth } from './context/AuthContext';
 
 function AppContent() {
-  const location = useLocation();
-  const { rol } = useAuth();
-
-  const hideNavBar =
-    location.pathname === '/login' ||
-    location.pathname === '/cocina' ||
-    location.pathname === '/pedido' ||
-    location.pathname.startsWith('/pedido/');
-
   return (
     <>
-      {!hideNavBar && <NavBar />}
-      <main className={hideNavBar ? 'main-full' : 'main-content'}>
+      <NavBar />
+      <main className="main-content">
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/pedido" element={<SeleccionMesa />} />

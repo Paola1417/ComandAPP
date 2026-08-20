@@ -25,11 +25,23 @@ const NavBar = () => {
 
   const isAdmin = rol === "administrador";
   const isCocina = rol === "cocina";
+  const isCustomerMenu = location.pathname.startsWith("/pedido/");
+
+  const handleLogoClick = () => {
+    if (isAdmin) navigate("/");
+    else if (isCocina) navigate("/cocina");
+    else navigate("/pedido");
+  };
 
   return (
     <header className={styles.header}>
       <div className={styles["header-left"]}>
-        <div className={styles.logo}>
+        <button
+          type="button"
+          className={styles.logo}
+          onClick={handleLogoClick}
+          title="ComandAPP"
+        >
           <img
             src="/favicon.svg"
             alt="Logo ComandAPP"
@@ -38,49 +50,52 @@ const NavBar = () => {
           <div className={styles["logo-text"]}>
             <h1>ComandAPP</h1>
           </div>
-        </div>
+        </button>
       </div>
       <nav className={styles.nav}>
-        <NavLink to="/" className={styles["nav-link"]} end>
-          Inicio
-        </NavLink>
-        {isAdmin && (
-          <NavLink to="/menu" className={styles["nav-link"]}>
-            Menú
-          </NavLink>
-        )}
-        {isAdmin && (
-          <NavLink to="/mesas" className={styles["nav-link"]}>
-            Mesas
-          </NavLink>
-        )}
-        {(isAdmin || isCocina) && (
-          <NavLink to="/pedidos" className={styles["nav-link"]}>
-            Pedidos
-          </NavLink>
-        )}
-        {(isAdmin || isCocina) && (
-          <NavLink to="/cocina" className={styles["nav-link"]}>
-            Cocina
-          </NavLink>
-        )}
-        {isAdmin && (
-          <NavLink to="/reportes" className={styles["nav-link"]}>
-            Reportes
-          </NavLink>
-        )}
         {user ? (
-          <button
-            className={styles["nav-link"]}
-            style={{ background: "none", border: "none", color: "inherit", cursor: "pointer" }}
-            onClick={handleLogout}
-          >
-            Cerrar sesión
-          </button>
+          <>
+            <NavLink to="/" className={styles["nav-link"]} end>
+              Inicio
+            </NavLink>
+            {isAdmin && (
+              <NavLink to="/menu" className={styles["nav-link"]}>
+                Menú
+              </NavLink>
+            )}
+            {isAdmin && (
+              <NavLink to="/mesas" className={styles["nav-link"]}>
+                Mesas
+              </NavLink>
+            )}
+            {(isAdmin || isCocina) && (
+              <NavLink to="/pedidos" className={styles["nav-link"]}>
+                Pedidos
+              </NavLink>
+            )}
+            {(isAdmin || isCocina) && (
+              <NavLink to="/cocina" className={styles["nav-link"]}>
+                Cocina
+              </NavLink>
+            )}
+            {isAdmin && (
+              <NavLink to="/reportes" className={styles["nav-link"]}>
+                Reportes
+              </NavLink>
+            )}
+            <button
+              className={styles["btn-cerrar"]}
+              onClick={handleLogout}
+            >
+              Cerrar sesión
+            </button>
+          </>
         ) : (
-          <NavLink to="/login" className={styles["nav-link"]}>
-            Login
-          </NavLink>
+          isCustomerMenu && (
+            <NavLink to="/pedido" className={styles["nav-link"]}>
+              ← Volver a seleccionar mesa
+            </NavLink>
+          )
         )}
       </nav>
     </header>

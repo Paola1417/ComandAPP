@@ -12,6 +12,7 @@ const userRoutes=require("./routes/user.routes");
 const clientRoutes=require("./routes/client.routes");
 
 const errorHandler=require("./middlewares/errorHandler");
+const { UPLOADS_DIR } = require("./middlewares/uploadMiddleware");
 
 const app=express();
 
@@ -23,6 +24,8 @@ app.use((req, res, next) => {
   res.set("Cache-Control", "no-store");
   next();
 });
+
+app.use("/uploads", express.static(UPLOADS_DIR));
 
 app.use(cors());
 

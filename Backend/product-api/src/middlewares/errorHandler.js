@@ -1,6 +1,14 @@
 const errorHandler = (err, req, res, next) => {
   console.error(err);
 
+  if (err.name === "MulterError") {
+    const message =
+      err.code === "LIMIT_FILE_SIZE"
+        ? "La imagen supera el tamaño máximo permitido (5 MB)"
+        : err.message;
+    return res.status(400).json({ message });
+  }
+
   if (err.name === "SequelizeValidationError") {
     const errors = err.errors.map((e) => ({
       field: e.path,

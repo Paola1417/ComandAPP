@@ -8,6 +8,7 @@ import {
   createCategoryProduct,
   updateProduct,
   deleteProduct,
+  uploadProductImage,
 } from '../../api/orderApi';
 import ProductCard from '../../components/ProductCard/ProductCard';
 import FormModal from '../../components/FormModal/FormModal';
@@ -25,7 +26,8 @@ const PRODUCT_FIELDS = [
   { name: 'nombre', label: 'Nombre del producto', type: 'text', placeholder: 'Ej: Big Burger', required: true },
   { name: 'precio', label: 'Precio', type: 'number', placeholder: '0.00', min: '0', step: '0.01', required: true },
   { name: 'caracteristicas', label: 'Características', type: 'textarea', placeholder: 'Ingredientes, descripción, etc.', rows: 3 },
-  { name: 'imagen', label: 'URL de imagen', type: 'text', placeholder: 'https://...' },
+  { name: 'imagen', label: 'URL de imagen', type: 'text', placeholder: 'https://...', preview: true },
+  { name: 'imagenArchivo', label: 'O subir imagen desde archivo', type: 'file', accept: 'image/*', target: 'imagen' },
 ];
 
 const buildProductPayload = (values, categoryId = null) => ({
@@ -155,6 +157,11 @@ const Menu = () => {
         mensaje: err.response?.data?.message || 'No se pudo eliminar el producto.',
       });
     }
+  };
+
+  const handleFileUpload = async (file) => {
+    const result = await uploadProductImage(file);
+    return result.url;
   };
 
   const handleSubmit = async (values) => {
@@ -321,6 +328,7 @@ const Menu = () => {
           onSubmit={handleSubmit}
           onClose={closeModal}
           loading={submitting}
+          onFileUpload={handleFileUpload}
           closeOnOutsideClick={modal.type !== 'createProduct' && modal.type !== 'editProduct'}
           submitLabel="Guardar"
         />
