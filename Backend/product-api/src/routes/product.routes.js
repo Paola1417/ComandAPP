@@ -1,17 +1,19 @@
-const express=require("express");
+const express = require("express");
 
-const router=express.Router();
+const router = express.Router();
 
-const controller=require("../controllers/product.controller");
+const controller = require("../controllers/product.controller");
+const authMiddleware = require("../middlewares/authMiddleware");
+const roleMiddleware = require("../middlewares/roleMiddleware");
 
-router.get("/",controller.getProducts);
+router.get("/", authMiddleware, roleMiddleware("administrador", "cocina"), controller.getProducts);
 
-router.get("/:id",controller.getProduct);
+router.get("/:id", authMiddleware, roleMiddleware("administrador", "cocina"), controller.getProduct);
 
-router.post("/",controller.createProduct);
+router.post("/", authMiddleware, roleMiddleware("administrador"), controller.createProduct);
 
-router.put("/:id",controller.updateProduct);
+router.put("/:id", authMiddleware, roleMiddleware("administrador"), controller.updateProduct);
 
-router.delete("/:id",controller.deleteProduct);
+router.delete("/:id", authMiddleware, roleMiddleware("administrador"), controller.deleteProduct);
 
-module.exports=router;
+module.exports = router;

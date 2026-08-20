@@ -104,6 +104,62 @@
   margin-bottom: 8px;
 }
 
+.mesa-token {
+  margin: 10px 0;
+}
+
+.mesa-token label {
+  font-size: 11px;
+  color: var(--gris);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.token-url {
+  display: flex;
+  gap: 4px;
+}
+
+.token-url input {
+  flex: 1;
+  padding: 6px 8px;
+  font-size: 11px;
+  border: 1px solid var(--gris-claro);
+  border-radius: 4px;
+  background: #f8f9fa;
+  word-break: break-all;
+}
+
+.btn-copiar {
+  padding: 6px 8px;
+  background: var(--primario);
+  color: var(--claro);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.mesa-acciones-token {
+  margin: 8px 0;
+}
+
+.btn-regenerar {
+  width: 100%;
+  padding: 8px;
+  background: #ffc107;
+  color: #333;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.2s;
+}
+
+.btn-regenerar:hover {
+  background: #e0a800;
+}
+
 .mesa-fecha {
   font-size: 11px;
   color: var(--gris);

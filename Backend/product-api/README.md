@@ -69,6 +69,10 @@ Esta API expone funcionalidades para:
   - `DB_PASSWORD`
   - `DB_NAME`
   - `PORT`
+  - `JWT_SECRET` (clave secreta para firmar tokens)
+  - `JWT_EXPIRES_IN` (defecto: `8h`)
+  - `BCRYPT_SALT_ROUNDS` (defecto: `10`)
+  - `ADMIN_PASSWORD` / `COCINA_PASSWORD` (contraseñas iniciales de los usuarios seed)
 
 ## Instalación
 
@@ -199,10 +203,15 @@ Base: `/capp/mesas`
 ```
 
 - `PUT /capp/mesas/:id`
-  - Actualiza una mesa.
+  - Actualiza una mesa (requiere admin). Incluye `estado` (`activo`/`inactivo`).
+
+- `POST /capp/mesas/:id/regenerar-token`
+  - Regenera el `accessToken` de una mesa (requiere admin). Útil para invalidar un QR anterior.
 
 - `DELETE /capp/mesas/:id`
-  - Elimina una mesa.
+  - Elimina una mesa (requiere admin).
+
+Cada mesa genera automáticamente un `accessToken` único (aleatorio) al crearse. Este token identifica a la mesa en las URLs públicas del cliente (`/pedido/:token`).
 
 ### Órdenes
 
@@ -215,7 +224,7 @@ Base: `/capp/ordenes`
   - Obtiene una orden por id con sus ítems.
 
 - `POST /capp/ordenes`
-  - Crea una orden.
+  - Crea una orden (requiere auth: admin/cocina o uso interno).
   - Body recomendado:
 
 ```json
@@ -227,28 +236,97 @@ Base: `/capp/ordenes`
     {
       "productId": 10,
       "cantidad": 2
-    },
-    {
-      "productId": 15,
-      "cantidad": 1
     }
   ]
 }
 ```
 
-- `PUT /capp/ordenes/:id`
-  - Actualiza los campos directos de la orden (`estado`, `observaciones`).
+- `PUT /capp/ordenes/:id/estado`
+  - Cambia el estado de una orden (requiere auth: admin/cocina).
   - Body ejemplo:
 
 ```json
 {
-  "estado": "en preparación",
-  "observaciones": "Agregar salsa extra"
+  "estado": "en preparación"
 }
 ```
 
+Estados válidos: `pendiente`, `en preparación`, `listo para entrega`, `entregado`, `cancelado`.
+
+- `PUT /capp/ordenes/:id`
+  - Actualiza otros campos de la orden (requiere admin).
+
 - `DELETE /capp/ordenes/:id`
-  - Elimina una orden y sus ítems.
+  - Elimina una orden y sus ítems (requiere admin).
+
+### Autenticación y autorización (personal)
+
+Base: `/capp/auth` y `/capp/usuarios`
+
+- `POST /capp/auth/login`
+  - Inicia sesión de personal.
+  - Body:
+
+```json
+{
+  "correo": "admin@comandapp.com",
+  "password": "admin123"
+}
+```
+
+- Respuesta:
+
+```json
+{
+  "message": "Login exitoso",
+  "token": "JWT_TOKEN",
+  "user": { "id": 1, "nombre": "Administrador", "correo": "...", "rol": "administrador" }
+}
+```
+
+- El token JWT se envía en el header `Authorization: Bearer <token>`.
+- Middlewares: `authMiddleware` (verifica JWT, 401 si no/expirado) y `roleMiddleware(...roles)` (403 si el rol no está permitido).
+
+### Rutas públicas (cliente)
+
+Base: `/capp/pedido/:token`
+
+- `GET /capp/pedido/:token` — resuelve la mesa por su `accessToken` (valida que exista y esté `activo`).
+- `GET /capp/pedido/:token/menu` — menú de categorías/con productos para la mesa.
+- `POST /capp/pedido/:token` — crea un pedido asociado a la mesa. El backend toma los precios reales desde la BD, ignora precios enviados por el cliente y deja el estado en `pendiente`. Body:
+
+```json
+{
+  "observaciones": "Sin cebolla",
+  "items": [
+    { "productId": 10, "cantidad": 2 }
+  ]
+}
+```
+
+- `GET /capp/pedido/:token/estado` — consulta el último pedido (estado, total, observaciones, mesa).
+- `GET /capp/pedido/:token/pedidos` — historial de pedidos de la mesa.
+
+Los clientes **no** usan JWT: acceden mediante el `accessToken` de la mesa (identificador aleatorio no predecible). Estas rutas no requieren login, pero sí validan correctamente el token de la mesa.
+
+### Usuarios (admin)
+
+Base: `/capp/usuarios` — requiere auth (admin).
+
+- `GET /capp/usuarios`, `GET /capp/usuarios/:id`
+- `POST /capp/usuarios` — crea usuario (password hasheado con bcryptjs).
+- `PUT /capp/usuarios/:id`, `DELETE /capp/usuarios/:id`
+
+Roles internos: `administrador`, `cocina`. Los clientes no tienen cuenta; acceden por URL de mesa.
+
+### Usuarios de prueba (seed)
+
+Al iniciar el servidor se crean (si no existen):
+
+- `admin@comandapp.com` / `admin123` — rol `administrador`
+- `cocina@comandapp.com` / `cocina123` — rol `cocina`
+
+Las contraseñas se pueden sobreescribir con `ADMIN_PASSWORD` y `COCINA_PASSWORD` en `.env`.
 
 ## Comportamiento del servicio de pedidos
 

@@ -5,6 +5,7 @@ import {
   createTable,
   updateTable,
   deleteTable,
+  regenerarTokenMesa,
 } from '../../api/orderApi';
 import FormModal from '../../components/FormModal/FormModal';
 import Modal from '../../components/Modal/Modal';
@@ -108,6 +109,41 @@ const Mesas = () => {
     }
   };
 
+  const handleRegenerarToken = async (mesa) => {
+    if (
+      !window.confirm(
+        `¿Regenerar el acceso de la mesa ${mesa.numeroMesa}? Se invalidará el enlace anterior.`,
+      )
+    ) {
+      return;
+    }
+    try {
+      await regenerarTokenMesa(mesa.id);
+      await refetch();
+      setFb(
+        'exito',
+        'Token regenerado',
+        `La mesa ${mesa.numeroMesa} tiene un nuevo acceso.`,
+      );
+    } catch (err) {
+      setFb(
+        'error',
+        'Error',
+        err.response?.data?.message || 'No se pudo regenerar el token.',
+      );
+    }
+  };
+
+  const getUrlMesa = (accessToken) => {
+    const base = (import.meta.env.VITE_PUBLIC_URL || window.location.origin).replace(/\/$/, '');
+    return `${base}/pedido/${accessToken}`;
+  };
+
+  const copyUrl = (url) => {
+    navigator.clipboard.writeText(url);
+    setFb('exito', 'URL copiada', 'La URL de la mesa fue copiada al portapapeles.');
+  };
+
   const getModalTitle = () => {
     if (modal.type === 'edit') {
       return `Editar Mesa ${modal.mesa?.numeroMesa}`;
@@ -180,17 +216,50 @@ const Mesas = () => {
                 </div>
               </div>
 
-              <div className={styles['mesa-mesero']}>
-                Mesero: {mesa.mesero || 'Sin asignar'}
-              </div>
+               <div className={styles['mesa-mesero']}>
+                 Mesero: {mesa.mesero || 'Sin asignar'}
+               </div>
 
-              <div className={styles['mesa-fecha']}>
-                {new Date(mesa.createdAt).toLocaleDateString('es-CO', {
-                  year: 'numeric',
-                  month: '2-digit',
-                  day: '2-digit',
-                })}
-              </div>
+               {mesa.accessToken && (
+                 <div className={styles['mesa-token']}>
+                   <label>URL / QR de acceso:</label>
+                   <div className={styles['token-url']}>
+                     <input
+                       type="text"
+                       readOnly
+                       value={getUrlMesa(mesa.accessToken)}
+                       onDoubleClick={() => copyUrl(getUrlMesa(mesa.accessToken))}
+                     />
+                     <button
+                       className={styles['btn-copiar']}
+                       title="Copiar URL"
+                       onClick={() => copyUrl(getUrlMesa(mesa.accessToken))}
+                     >
+                       📋
+                     </button>
+                   </div>
+                 </div>
+               )}
+
+               <div className={styles['mesa-acciones-token']}>
+                 {mesa.accessToken && mesa.estado === 'activo' && (
+                   <button
+                     className={styles['btn-regenerar']}
+                     title="Regenerar acceso de la mesa"
+                     onClick={() => handleRegenerarToken(mesa)}
+                   >
+                     🔄 Regenerar acceso
+                   </button>
+                 )}
+               </div>
+
+               <div className={styles['mesa-fecha']}>
+                 {new Date(mesa.createdAt).toLocaleDateString('es-CO', {
+                   year: 'numeric',
+                   month: '2-digit',
+                   day: '2-digit',
+                 })}
+               </div>
             </div>
           ))
         ) : (

@@ -21,10 +21,31 @@ const TableRestaurant = sequelize.define(
             type: DataTypes.STRING,
             allowNull: false,
         },
+
+        estado: {
+            type: DataTypes.ENUM("activo", "inactivo"),
+            allowNull: false,
+            defaultValue: "activo",
+        },
+
+        accessToken: {
+            type: DataTypes.STRING(64),
+            allowNull: true,
+            unique: true,
+        },
     },
     {
         tableName: "mesas",
         timestamps: true,
+        hooks: {
+            beforeCreate: (mesa) => {
+                if (!mesa.accessToken) {
+                    mesa.accessToken = require("crypto")
+                        .randomBytes(16)
+                        .toString("hex");
+                }
+            },
+        },
     },
 );
 

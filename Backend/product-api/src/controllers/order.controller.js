@@ -38,6 +38,22 @@ exports.updateOrder = async (req, res) => {
     res.json(order);
 };
 
+exports.updateOrderEstado = async (req, res) => {
+    const { estado } = req.body;
+
+    if (!estado) {
+        return res.status(400).json({ message: "estado es obligatorio" });
+    }
+
+    const order = await service.updateOrder(req.params.id, { estado });
+
+    if (!order) {
+        return res.status(404).json({ message: "Orden no encontrada" });
+    }
+
+    res.json(order);
+};
+
 exports.deleteOrder = async (req, res) => {
     const order = await service.deleteOrder(req.params.id);
 

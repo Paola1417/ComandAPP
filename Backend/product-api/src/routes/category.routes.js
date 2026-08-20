@@ -3,19 +3,21 @@ const express = require("express");
 const router = express.Router();
 
 const controller = require("../controllers/category.controller");
+const authMiddleware = require("../middlewares/authMiddleware");
+const roleMiddleware = require("../middlewares/roleMiddleware");
 
-router.get("/", controller.getCategories);
+router.get("/", authMiddleware, roleMiddleware("administrador", "cocina"), controller.getCategories);
 
-router.get("/:categoryId/productos", controller.getCategoryProducts);
+router.get("/:categoryId/productos", authMiddleware, roleMiddleware("administrador", "cocina"), controller.getCategoryProducts);
 
-router.post("/:categoryId/productos", controller.createCategoryProduct);
+router.post("/:categoryId/productos", authMiddleware, roleMiddleware("administrador"), controller.createCategoryProduct);
 
-router.get("/:id", controller.getCategory);
+router.get("/:id", authMiddleware, roleMiddleware("administrador", "cocina"), controller.getCategory);
 
-router.post("/", controller.createCategory);
+router.post("/", authMiddleware, roleMiddleware("administrador"), controller.createCategory);
 
-router.put("/:id", controller.updateCategory);
+router.put("/:id", authMiddleware, roleMiddleware("administrador"), controller.updateCategory);
 
-router.delete("/:id", controller.deleteCategory);
+router.delete("/:id", authMiddleware, roleMiddleware("administrador"), controller.deleteCategory);
 
 module.exports = router;
