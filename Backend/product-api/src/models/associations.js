@@ -3,6 +3,7 @@ const Product = require("./Product");
 const TableRestaurant = require("./TableRestaurant");
 const Order = require("./Order");
 const OrderItem = require("./OrderItem");
+const User = require("./User");
 
 Category.hasMany(Product, {
   foreignKey: "categoryId",
@@ -55,4 +56,5 @@ module.exports = {
   TableRestaurant,
   Order,
   OrderItem,
+  User,
 };

@@ -1,17 +1,51 @@
-const express = require('express');
+const express = require("express");
 
 const router = express.Router();
 
-const controller = require('../controllers/order.controller');
+const controller = require("../controllers/order.controller");
+const authMiddleware = require("../middlewares/authMiddleware");
+const roleMiddleware = require("../middlewares/roleMiddleware");
 
-router.get('/', controller.getOrders);
+router.get(
+  "/",
+  authMiddleware,
+  roleMiddleware("administrador", "cocina"),
+  controller.getOrders,
+);
 
-router.get('/:id', controller.getOrder);
+router.get(
+  "/:id",
+  authMiddleware,
+  roleMiddleware("administrador", "cocina"),
+  controller.getOrder,
+);
 
-router.post('/', controller.createOrder);
+router.put(
+  "/:id/estado",
+  authMiddleware,
+  roleMiddleware("administrador", "cocina"),
+  controller.updateOrderEstado,
+);
 
-router.put('/:id', controller.updateOrder);
+router.post(
+  "/",
+  authMiddleware,
+  roleMiddleware("administrador", "cocina"),
+  controller.createOrder,
+);
 
-router.delete('/:id', controller.deleteOrder);
+router.put(
+  "/:id",
+  authMiddleware,
+  roleMiddleware("administrador"),
+  controller.updateOrder,
+);
+
+router.delete(
+  "/:id",
+  authMiddleware,
+  roleMiddleware("administrador"),
+  controller.deleteOrder,
+);
 
 module.exports = router;

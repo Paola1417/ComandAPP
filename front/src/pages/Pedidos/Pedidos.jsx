@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useApi } from '../../hooks/useApi';
-import { fetchOrders, updateOrder, deleteOrder } from '../../api/orderApi';
+import { fetchOrders, updateOrderEstado, deleteOrder } from '../../api/orderApi';
 import { formatCurrency, formatDate, formatOrderId } from '../../utils/format';
 import Modal from '../../components/Modal/Modal';
 import styles from './Pedidos.module.css';
@@ -51,7 +51,7 @@ const Pedidos = () => {
     }
     setAccion(null);
     try {
-      const actualizado = await updateOrder(order.id, { estado: nuevoEstado });
+      const actualizado = await updateOrderEstado(order.id, nuevoEstado);
       await refetch();
       setFeedbackMsg(
         'exito',

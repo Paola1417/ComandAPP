@@ -21,6 +21,21 @@ res.json(product);
 
 }
 
+exports.uploadImagen = async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({
+      message: "No se recibió ningún archivo (campo 'imagen')",
+    });
+  }
+
+  const url = `http://${req.get("host")}/uploads/${req.file.filename}`;
+
+  res.status(201).json({
+    url,
+    filename: req.file.filename,
+  });
+};
+
 exports.createProduct=async(req,res)=>{
 
 const product=await service.create(req.body);

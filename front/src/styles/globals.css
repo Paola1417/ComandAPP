@@ -35,6 +35,18 @@ body,
   padding: 0;
 }
 
+.app {
+  min-height: 100vh;
+}
+
+.main-content {
+  padding: 20px;
+}
+
+.main-full {
+  min-height: 100vh;
+}
+
 ul {
   list-style: none;
 }

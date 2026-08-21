@@ -20,6 +20,7 @@ pnpm-debug.log*
 tmp/
 temp/
 .cache/
+uploads/
 
 # ===========================
 # Sistema operativo

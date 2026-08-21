@@ -1,5 +1,10 @@
 import api from './client';
 
+export const login = async (correo, password) => {
+  const response = await api.post('/auth/login', { correo, password });
+  return response.data;
+};
+
 export const fetchCategories = async () => {
   const response = await api.get('/categorias');
   return response.data;
@@ -17,6 +22,16 @@ export const fetchTables = async () => {
 
 export const fetchOrders = async () => {
   const response = await api.get('/ordenes');
+  return response.data;
+};
+
+export const fetchOrderById = async (id) => {
+  const response = await api.get('/ordenes/' + id);
+  return response.data;
+};
+
+export const updateOrderEstado = async (id, estado) => {
+  const response = await api.put('/ordenes/' + id + '/estado', { estado });
   return response.data;
 };
 
@@ -70,6 +85,13 @@ export const deleteProduct = async (id) => {
   return response.data;
 };
 
+export const uploadProductImage = async (file) => {
+  const formData = new FormData();
+  formData.append('imagen', file);
+  const response = await api.post('/productos/imagen', formData);
+  return response.data;
+};
+
 export const createTable = async (data) => {
   const response = await api.post('/mesas', data);
   return response.data;
@@ -83,4 +105,74 @@ export const updateTable = async (id, data) => {
 export const deleteTable = async (id) => {
   const response = await api.delete(`/mesas/${id}`);
   return response.data;
+};
+
+export const regenerarTokenMesa = async (id) => {
+  const response = await api.post(`/mesas/${id}/regenerar-token`);
+  return response.data;
+};
+
+// ---------- Usuarios (admin) ----------
+export const fetchUsers = async () => {
+  const response = await api.get('/usuarios');
+  return response.data;
+};
+
+export const fetchUserById = async (id) => {
+  const response = await api.get(`/usuarios/${id}`);
+  return response.data;
+};
+
+export const createUser = async (data) => {
+  const response = await api.post('/usuarios', data);
+  return response.data;
+};
+
+export const updateUser = async (id, data) => {
+  const response = await api.put(`/usuarios/${id}`, data);
+  return response.data;
+};
+
+export const deleteUser = async (id) => {
+  const response = await api.delete(`/usuarios/${id}`);
+  return response.data;
+};
+
+// ---------- Rutas públicas para cliente (token de mesa) ----------
+export const fetchMesaByToken = async (token) => {
+  const response = await api.get(`/pedido/${token}`);
+  return response.data;
+};
+
+export const fetchMesasPublicas = async () => {
+  const response = await api.get('/pedido/mesas');
+  return response.data;
+};
+
+export const fetchProductosPublicos = async (token) => {
+  const response = await api.get(`/pedido/${token}/menu`);
+  return response.data;
+};
+
+export const createOrderPublica = async (token, orderData) => {
+  const response = await api.post(`/pedido/${token}`, orderData);
+  return response.data;
+};
+
+export const updateOrderPublica = async (token, orderId, orderData) => {
+  const response = await api.put(`/pedido/${token}/${orderId}`, orderData);
+  return response.data;
+};
+
+export const fetchEstadoPedido = async (token) => {
+  const response = await api.get(`/pedido/${token}/estado`);
+  return response.data;
+};
+
+export const fetchAllPedidosByToken = async (token) => {
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/capp/pedido/${token}/pedidos`, {
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!response.ok) return [];
+  return response.json();
 };
