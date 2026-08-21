@@ -1,0 +1,43 @@
+# Use root/rodri as user/password credentials
+# Este archivo se debe nombrar --->  stack.yml <---
+# EJECUTAR CON ESTA LINEA
+# docker-compose -f stack.yml up -d
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:latest
+    container_name: server-mysql
+    restart: unless-stopped
+
+    environment:
+      MYSQL_ROOT_PASSWORD: rodri
+      MYSQL_DATABASE: appdb
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppassword
+
+    ports:
+      - "3306:3306"
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  adminer:
+    image: adminer:latest
+    container_name: server-adminer
+    restart: unless-stopped
+
+    ports:
+      - "8086:8080"
+
+    depends_on:
+      - mysql
+
+volumes:
+  mysql_data:
