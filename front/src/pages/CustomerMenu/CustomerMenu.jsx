@@ -34,20 +34,21 @@ const CustomerMenu = () => {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
+    let cancelado = false;
     const cargarDatos = async () => {
       try {
         const mesaData = await fetchMesaByToken(token);
+        if (cancelado) return;
         setMesa(mesaData);
 
         const cats = await fetchProductosPublicos(token);
+        if (cancelado) return;
         setCategorias(cats);
-
-        if (cats && cats.length > 0 && !activeCategoryId) {
-          setActiveCategoryId(cats[0].id);
-        }
+        setActiveCategoryId(cats?.[0]?.id ?? null);
 
         try {
           const estado = await fetchEstadoPedido(token);
+          if (cancelado) return;
           setEstadoActual(estado);
           if (estado && estado.estado === 'pendiente') {
             setPedidoActualId(estado.id);
@@ -64,21 +65,24 @@ const CustomerMenu = () => {
             setObservaciones(estado.observaciones || '');
           } else {
             setPedidoActualId(null);
-            setCartItems([]);
           }
         } catch {
+          if (cancelado) return;
           setEstadoActual(null);
           setPedidoActualId(null);
-          setCartItems([]);
         }
       } catch (err) {
+        if (cancelado) return;
         setError(err.response?.data?.message || err.message || 'Error al cargar los datos');
       } finally {
-        setLoading(false);
+        if (!cancelado) setLoading(false);
       }
     };
     cargarDatos();
-  }, [token, activeCategoryId]);
+    return () => {
+      cancelado = true;
+    };
+  }, [token]);
 
   const activeCategory = useMemo(() => {
     if (!categorias) return null;
