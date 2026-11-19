@@ -136,7 +136,7 @@ const Mesas = () => {
 
   const getUrlMesa = (accessToken) => {
     const base = (import.meta.env.VITE_PUBLIC_URL || window.location.origin).replace(/\/$/, '');
-    return `${base}/pedido/${accessToken}`;
+    return `${base}/#/pedido/${accessToken}`;
   };
 
   const copyUrl = (url) => {
