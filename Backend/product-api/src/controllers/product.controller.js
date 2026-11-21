@@ -28,7 +28,13 @@ exports.uploadImagen = async (req, res) => {
     });
   }
 
-  const url = `http://${req.get("host")}/uploads/${req.file.filename}`;
+  // En producción (HTTPS detrás de proxy) hay que devolver la URL pública:
+  // con "http://" el navegador bloquea la imagen por mixed content.
+  const baseUrl = (
+    process.env.PUBLIC_BASE_URL || `${req.protocol}://${req.get("host")}`
+  ).replace(/\/$/, "");
+
+  const url = `${baseUrl}/uploads/${req.file.filename}`;
 
   res.status(201).json({
     url,

@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express=require("express");
 const cors=require("cors");
 const helmet=require("helmet");
@@ -16,6 +18,8 @@ const { UPLOADS_DIR } = require("./middlewares/uploadMiddleware");
 
 const app=express();
 
+app.set("trust proxy", 1);
+
 app.disable("etag");
 
 const appname= "capp";
@@ -27,13 +31,37 @@ app.use((req, res, next) => {
 
 app.use("/uploads", express.static(UPLOADS_DIR));
 
-app.use(cors());
+// CORS: sin CORS_ORIGIN se permite cualquier origen (útil en local). En
+// producción se puede limitar al dominio del front, p. ej.
+// CORS_ORIGIN=https://usuario.github.io
+const corsOrigins = (process.env.CORS_ORIGIN || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
-app.use(helmet());
+app.use(cors(corsOrigins.length > 0 ? { origin: corsOrigins } : {}));
+
+// crossOriginResourcePolicy permite que el front (GitHub Pages) cargue las
+// imágenes de /uploads desde otro dominio.
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  }),
+);
 
 app.use(morgan("dev"));
 
 app.use(express.json());
+
+// Health check: sirve para plataformas de despliegue y para "despertar" el
+// servidor gratuito (duerme tras unos minutos sin tráfico).
+app.get("/", (req, res) => {
+  res.json({ ok: true, service: "ComandAPP API" });
+});
+
+app.get(`/${appname}/health`, (req, res) => {
+  res.json({ ok: true, timestamp: new Date().toISOString() });
+});
 
 app.use(`/${appname}/auth`,authRoutes);
 app.use(`/${appname}/usuarios`,userRoutes);

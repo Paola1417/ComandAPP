@@ -49,25 +49,41 @@ const seedUsers = async () => {
 
 async function startServer() {
   try {
+    // Puerto: Enzonic Deploy inyecta PORT; los servidores del panel usan SERVER_PORT.
+    const port = process.env.PORT || process.env.SERVER_PORT || 3000;
+
     // Crear BD si no existe
 
     await initializeDatabase();
 
-    // Crear tablas
+    // Crear tablas. En producción conviene DB_SYNC=none: las tablas ya existen
+    // y "alter" en cada arranque es lento (y arriesgado) en la BD gratuita.
 
-    await sequelize.sync({ alter: true });
+    const syncMode = (process.env.DB_SYNC || "alter").toLowerCase();
 
-    console.log("Tablas verificadas correctamente.");
+    if (syncMode === "none") {
+      await sequelize.authenticate();
+
+      console.log("Conexión verificada (sincronización de tablas omitida).");
+    } else {
+      await sequelize.sync({ alter: true });
+
+      console.log("Tablas verificadas correctamente.");
+    }
 
     await seedUsers();
 
     await ensureTableTokens();
 
-    app.listen(process.env.PORT, () => {
-      console.log(`Servidor iniciado en puerto ${process.env.PORT}`);
+    app.listen(port, "0.0.0.0", () => {
+      console.log(`Servidor iniciado en puerto ${port}`);
     });
   } catch (error) {
     console.error(error);
+
+    // Salir con error para que la plataforma reinicie el proceso en vez de
+    // dejarlo vivo sin base de datos.
+    process.exit(1);
   }
 }
 

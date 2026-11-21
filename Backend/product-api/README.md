@@ -102,6 +102,10 @@ Registradas en `src/models/associations.js`. **Solo se activan si se hace `requi
 | `DB_HOST` / `DB_PORT` | Host y puerto de MySQL |
 | `DB_USER` / `DB_PASSWORD` | Credenciales de MySQL |
 | `DB_NAME` | Nombre de la base (`restaurante`) |
+| `DB_SSL` | `true` para conectar con TLS (obligatorio en hosts gestionados como Enzonic); `false` o ausente en MySQL local/Docker |
+| `DB_SYNC` | `alter` (defecto) sincroniza tablas al arrancar; `none` solo verifica la conexión (recomendado en producción) |
+| `PUBLIC_BASE_URL` | URL pública del API (p. ej. `https://mi-api.enzonic.dev`) usada para construir las URLs de las imágenes subidas. Vacío = se deduce del request |
+| `CORS_ORIGIN` | Orígenes permitidos separados por coma. Vacío = todos |
 | `JWT_SECRET` | Clave para firmar tokens JWT |
 | `JWT_EXPIRES_IN` | Expiración del token (defecto: `8h`) |
 | `BCRYPT_SALT_ROUNDS` | Rounds de bcrypt (defecto: `10`) |
@@ -120,7 +124,7 @@ npm run dev     # nodemon src/server.js
 npm start       # node src/server.js
 ```
 
-La aplicación se ejecuta en el puerto definido en `.env` (`PORT`). No hay health check; para verificar que está vivo puedes llamar a un endpoint público como `GET /capp/pedido/mesas`.
+La aplicación se ejecuta en el puerto definido en `.env` (`PORT`) o en el que inyecte la plataforma (`PORT`/`SERVER_PORT`), escuchando en `0.0.0.0`. Para verificar que está viva: `GET /capp/health` (o `GET /`), que devuelve `{ "ok": true }`.
 
 ## Inicialización de la base de datos (arranque)
 
@@ -128,7 +132,7 @@ Al iniciar el servidor (`src/server.js`) se ejecuta, en orden:
 
 1. Registro de asociaciones (`models/associations`).
 2. Creación de la base de datos si no existe (`src/config/initDatabase.js`). Si falla, el proceso termina.
-3. Sincronización de tablas con `sequelize.sync({ alter: true })`. **No hay migraciones**: cambiar un modelo altera las tablas existentes al arrancar.
+3. Sincronización de tablas con `sequelize.sync({ alter: true })`. **No hay migraciones**: cambiar un modelo altera las tablas existentes al arrancar. Con `DB_SYNC=none` se omite y solo se verifica la conexión (útil en producción).
 4. Seeds idempotentes de usuarios (solo se crean si el correo no existe):
    - `admin@comandapp.com` / `admin123` — rol `administrador`
    - `cocina@comandapp.com` / `cocina123` — rol `cocina`
@@ -138,7 +142,7 @@ Al iniciar el servidor (`src/server.js`) se ejecuta, en orden:
 
 ## Middlewares globales (`src/app.js`)
 
-En orden: deshabilita `etag`, fuerza `Cache-Control: no-store`, sirve `/uploads` como estático (imágenes subidas, sin auth), `cors()` abierto, `helmet()`, `morgan("dev")` y `express.json()`. Al final monta `errorHandler`.
+En orden: deshabilita `etag`, expone `GET /` y `GET /capp/health`, fuerza `Cache-Control: no-store`, sirve `/uploads` como estático (imágenes subidas, sin auth), `cors()` (restringible con `CORS_ORIGIN`), `helmet()` con `crossOriginResourcePolicy: cross-origin`, `morgan("dev")` y `express.json()`. Al final monta `errorHandler`. También fija `trust proxy` para que `req.protocol` sea `https` detrás de un proxy.
 
 Manejo de errores (`errorHandler.js`):
 
