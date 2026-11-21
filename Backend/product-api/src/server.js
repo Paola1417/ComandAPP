@@ -120,7 +120,7 @@ function startServer() {
   initializeWithRetry();
 }
 
-startServer();
+// startServer();
 
 /*
 function startServer() {
