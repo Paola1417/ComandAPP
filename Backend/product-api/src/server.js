@@ -102,8 +102,19 @@ async function initializeWithRetry(attempts = 5, delayMs = 15000) {
 }
 
 function startServer() {
-  // Puerto: Enzonic Deploy inyecta PORT; los servidores del panel usan SERVER_PORT.
-  const port = process.env.PORT || process.env.SERVER_PORT || 3000;
+  // Enzonic Deploy comprueba la salud en el puerto 3000 (el del preset Express),
+  // pero puede inyectar PORT/SERVER_PORT con el puerto del host. Escuchamos en
+  // todos los candidatos para no depender de cuál de los dos espera el proxy.
+  const ports = [
+    ...new Set(
+      [
+        3000,
+        Number(process.env.APP_PORT) || 0,
+        Number(process.env.PORT) || 0,
+        Number(process.env.SERVER_PORT) || 0,
+      ].filter((port) => port > 0),
+    ),
+  ];
 
   app.locals.dbReady = false;
   app.locals.dbError = null;
@@ -111,11 +122,13 @@ function startServer() {
   // Escuchar primero: las plataformas de despliegue matan el proceso si el
   // puerto no responde a tiempo (COLD_START_TIMEOUT). La base de datos se
   // inicializa después, sin bloquear el arranque.
-  app.listen(port, "0.0.0.0", () => {
-    console.log(`Servidor iniciado en puerto ${port}`);
+  for (const port of ports) {
+    app.listen(port, "0.0.0.0", () => {
+      console.log(`Servidor iniciado en puerto ${port}`);
+    });
+  }
 
-    initializeWithRetry();
-  });
+  initializeWithRetry();
 }
 
 startServer();
