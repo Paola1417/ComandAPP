@@ -21,7 +21,9 @@ const ensureTableTokens = async () => {
     await mesa.save({ fields: ["accessToken"] });
   }
   if (mesasSinToken.length > 0) {
-    console.log(`Tokens asignados a ${mesasSinToken.length} mesa(s) sin acceso.`);
+    console.log(
+      `Tokens asignados a ${mesasSinToken.length} mesa(s) sin acceso.`,
+    );
   }
 };
 
@@ -102,6 +104,26 @@ async function initializeWithRetry(attempts = 5, delayMs = 15000) {
 }
 
 function startServer() {
+  const PORT = process.env.PORT || 3000;
+
+  app.locals.dbReady = false;
+  app.locals.dbError = null;
+
+  const server = app.listen(PORT, "0.0.0.0", () => {
+    console.log(`ComandAPP iniciado correctamente en el puerto ${PORT}`);
+  });
+
+  server.on("error", (error) => {
+    console.error("Error iniciando el servidor:", error);
+  });
+
+  initializeWithRetry();
+}
+
+startServer();
+
+/*
+function startServer() {
   // Enzonic Deploy comprueba la salud en el puerto 3000 (el del preset Express),
   // pero puede inyectar PORT/SERVER_PORT con el puerto del host. Escuchamos en
   // todos los candidatos para no depender de cuál de los dos espera el proxy.
@@ -130,5 +152,6 @@ function startServer() {
 
   initializeWithRetry();
 }
+*/
 
 startServer();
