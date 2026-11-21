@@ -47,44 +47,75 @@ const seedUsers = async () => {
   }
 };
 
-async function startServer() {
-  try {
-    // Puerto: Enzonic Deploy inyecta PORT; los servidores del panel usan SERVER_PORT.
-    const port = process.env.PORT || process.env.SERVER_PORT || 3000;
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-    // Crear BD si no existe
+async function initialize() {
+  // En producción la BD ya existe: DB_INIT=false ahorra una conexión y el DDL.
+  const dbInit = (process.env.DB_INIT || "true").toLowerCase() !== "false";
 
+  if (dbInit) {
     await initializeDatabase();
-
-    // Crear tablas. En producción conviene DB_SYNC=none: las tablas ya existen
-    // y "alter" en cada arranque es lento (y arriesgado) en la BD gratuita.
-
-    const syncMode = (process.env.DB_SYNC || "alter").toLowerCase();
-
-    if (syncMode === "none") {
-      await sequelize.authenticate();
-
-      console.log("Conexión verificada (sincronización de tablas omitida).");
-    } else {
-      await sequelize.sync({ alter: true });
-
-      console.log("Tablas verificadas correctamente.");
-    }
-
-    await seedUsers();
-
-    await ensureTableTokens();
-
-    app.listen(port, "0.0.0.0", () => {
-      console.log(`Servidor iniciado en puerto ${port}`);
-    });
-  } catch (error) {
-    console.error(error);
-
-    // Salir con error para que la plataforma reinicie el proceso en vez de
-    // dejarlo vivo sin base de datos.
-    process.exit(1);
   }
+
+  // Crear tablas. En producción conviene DB_SYNC=none: las tablas ya existen
+  // y "alter" en cada arranque es lento (y arriesgado) en la BD gratuita.
+  const syncMode = (process.env.DB_SYNC || "alter").toLowerCase();
+
+  if (syncMode === "none") {
+    await sequelize.authenticate();
+
+    console.log("Conexión verificada (sincronización de tablas omitida).");
+  } else {
+    await sequelize.sync({ alter: true });
+
+    console.log("Tablas verificadas correctamente.");
+  }
+
+  await seedUsers();
+
+  await ensureTableTokens();
+
+  app.locals.dbReady = true;
+}
+
+async function initializeWithRetry(attempts = 5, delayMs = 15000) {
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      await initialize();
+      return;
+    } catch (error) {
+      console.error(
+        `Error inicializando la base de datos (intento ${attempt}/${attempts}): ${error.code || ""} ${error.message}`,
+      );
+
+      if (attempt === attempts) {
+        app.locals.dbError = error.message;
+        console.error(
+          "La API queda en pie pero sin base de datos; revisa DB_HOST/DB_USER/DB_PASSWORD.",
+        );
+        return;
+      }
+
+      await sleep(delayMs);
+    }
+  }
+}
+
+function startServer() {
+  // Puerto: Enzonic Deploy inyecta PORT; los servidores del panel usan SERVER_PORT.
+  const port = process.env.PORT || process.env.SERVER_PORT || 3000;
+
+  app.locals.dbReady = false;
+  app.locals.dbError = null;
+
+  // Escuchar primero: las plataformas de despliegue matan el proceso si el
+  // puerto no responde a tiempo (COLD_START_TIMEOUT). La base de datos se
+  // inicializa después, sin bloquear el arranque.
+  app.listen(port, "0.0.0.0", () => {
+    console.log(`Servidor iniciado en puerto ${port}`);
+
+    initializeWithRetry();
+  });
 }
 
 startServer();

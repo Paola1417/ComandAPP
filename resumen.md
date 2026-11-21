@@ -52,8 +52,8 @@ Documento de referencia del despliegue del API de **ComandAPP** en **Enzonic Dep
 
 | # | Archivo | Cambio | Motivo |
 |---|---|---|---|
-| 1 | `Backend/product-api/src/server.js` | Puerto `process.env.PORT \|\| process.env.SERVER_PORT \|\| 3000`; `app.listen(port, "0.0.0.0")`; `process.exit(1)` si falla el arranque | Deploy inyecta el puerto y necesita el proceso vivo/reintentable |
-| 2 | `Backend/product-api/src/server.js` | `DB_SYNC`: `alter` (local) / `none` (producción) | Evita `sequelize.sync({ alter: true })` en cada *cold start* sobre 0.25 vCPU |
+| 1 | `Backend/product-api/src/server.js` | Puerto `process.env.PORT \|\| process.env.SERVER_PORT \|\| 3000`; **`app.listen` antes de la BD**; inicialización en segundo plano con 5 reintentos (15 s) | Deploy mata el proceso si el puerto no responde a tiempo (`COLD_START_TIMEOUT`) |
+| 2 | `Backend/product-api/src/server.js` | `DB_SYNC`: `alter` (local) / `none` (producción) y `DB_INIT=false` para omitir `CREATE DATABASE` | Evita `sequelize.sync({ alter: true })` y el DDL en cada *cold start* sobre 0.25 vCPU |
 | 3 | `Backend/product-api/src/app.js` | `app.set("trust proxy", 1)` | Que `req.protocol` sea `https` detrás del proxy |
 | 4 | `Backend/product-api/src/app.js` | `helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } })` | Por defecto Helmet bloquea `/uploads/*` desde `github.io` |
 | 5 | `Backend/product-api/src/app.js` | Rutas `GET /` y `GET /capp/health` → `{ ok: true }` | Health check y "despertar" el servidor gratuito |
@@ -80,6 +80,7 @@ DB_NAME=main
 DB_SSL=true
 
 DB_SYNC=none
+DB_INIT=false
 PUBLIC_BASE_URL=https://comandapp.enzonic.dev
 CORS_ORIGIN=https://paola1417.github.io
 UPLOADS_DIR=/tmp/comandapp-uploads
@@ -182,7 +183,7 @@ curl.exe -X POST https://comandapp.enzonic.dev/capp/auth/login `
 | Prueba | Resultado esperado |
 |---|---|
 | `GET /` | `200 { "ok": true, "service": "ComandAPP API" }` |
-| `GET /capp/health` | `200 { "ok": true, "timestamp": "..." }` |
+| `GET /capp/health` | `200 { "ok": true, "db": true, "timestamp": "..." }` (`db: false` mientras inicializa) |
 | `GET /capp/pedido/mesas` | `200` con la lista de mesas activas |
 | `POST /capp/auth/login` | `200` con `token` JWT |
 | `GET /capp/productos` con `Authorization: Bearer <token>` | `200` con productos |
@@ -226,6 +227,7 @@ curl.exe -X POST https://comandapp.enzonic.dev/capp/auth/login `
 | Síntoma | Causa probable | Solución |
 |---|---|---|
 | El proceso no arranca / no responde | No escucha el puerto inyectado | Verificar `PORT`/`SERVER_PORT` en logs; no fijar `PORT` a mano |
+| `503 COLD_START_TIMEOUT` | La app no abrió el puerto a tiempo | Ya resuelto: `app.listen` va antes de inicializar la BD |
 | `ENOENT ... mkdir '/var/task/uploads'` | El código se monta en solo lectura | Ya resuelto: `uploadMiddleware` usa `UPLOADS_DIR` o `/tmp` |
 | `unknown database host` | Host/credenciales obsoletas en Enzonic Databases | Copiar de nuevo `DB_HOST`/`DB_USER`/`DB_PASSWORD` desde el panel |
 | `ER_SECURE_TRANSPORT_REQUIRED` | Falta TLS | `DB_SSL=true` |
@@ -255,6 +257,7 @@ curl.exe -X POST https://comandapp.enzonic.dev/capp/auth/login `
 Backend/product-api/src/server.js
 Backend/product-api/src/app.js
 Backend/product-api/src/config/database.js
+Backend/product-api/src/config/initDatabase.js
 Backend/product-api/src/controllers/product.controller.js
 Backend/product-api/src/middlewares/uploadMiddleware.js
 Backend/product-api/package.json
@@ -275,5 +278,6 @@ resumen.md
 | `POST /capp/productos/imagen` (multipart `imagen`) | `201` con URL `https://.../uploads/...` |
 | Cabeceras CORS / CORP / Cache-Control | `*` / `cross-origin` / `no-store` |
 | Directorio de uploads no escribible | Cae a `uploads/` o `/tmp` sin tumbar el proceso |
+| BD caída o con host inválido | El puerto responde, `/capp/health` devuelve `db: false` y se reintenta sin reiniciar |
 
 **Commits:** `c87636d`, `24b15fd` y el fix de `uploadMiddleware` en `main` (repositorio `Paola1417/ComandAPP`).

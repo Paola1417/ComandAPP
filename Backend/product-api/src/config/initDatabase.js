@@ -64,7 +64,8 @@ async function initializeDatabase() {
       );
     }
 
-    process.exit(1);
+    // Se propaga para que server.js reintente sin tumbar el proceso.
+    throw error;
   } finally {
     if (connection) {
       await connection.end();

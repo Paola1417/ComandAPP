@@ -60,7 +60,11 @@ app.get("/", (req, res) => {
 });
 
 app.get(`/${appname}/health`, (req, res) => {
-  res.json({ ok: true, timestamp: new Date().toISOString() });
+  res.json({
+    ok: true,
+    db: Boolean(req.app.locals.dbReady),
+    timestamp: new Date().toISOString(),
+  });
 });
 
 app.use(`/${appname}/auth`,authRoutes);

@@ -104,6 +104,7 @@ Registradas en `src/models/associations.js`. **Solo se activan si se hace `requi
 | `DB_NAME` | Nombre de la base (`restaurante`) |
 | `DB_SSL` | `true` para conectar con TLS (obligatorio en hosts gestionados como Enzonic); `false` o ausente en MySQL local/Docker |
 | `DB_SYNC` | `alter` (defecto) sincroniza tablas al arrancar; `none` solo verifica la conexión (recomendado en producción) |
+| `DB_INIT` | `true` (defecto) ejecuta `CREATE DATABASE IF NOT EXISTS`; `false` lo omite (recomendado en producción) |
 | `PUBLIC_BASE_URL` | URL pública del API (p. ej. `https://mi-api.enzonic.dev`) usada para construir las URLs de las imágenes subidas. Vacío = se deduce del request |
 | `CORS_ORIGIN` | Orígenes permitidos separados por coma. Vacío = todos |
 | `UPLOADS_DIR` | Directorio escribible para las imágenes subidas. Vacío = `uploads/` del proyecto (o el temporal si el código es de solo lectura) |
@@ -132,14 +133,16 @@ La aplicación se ejecuta en el puerto definido en `.env` (`PORT`) o en el que i
 Al iniciar el servidor (`src/server.js`) se ejecuta, en orden:
 
 1. Registro de asociaciones (`models/associations`).
-2. Creación de la base de datos si no existe (`src/config/initDatabase.js`). Si falla, el proceso termina.
-3. Sincronización de tablas con `sequelize.sync({ alter: true })`. **No hay migraciones**: cambiar un modelo altera las tablas existentes al arrancar. Con `DB_SYNC=none` se omite y solo se verifica la conexión (útil en producción).
-4. Seeds idempotentes de usuarios (solo se crean si el correo no existe):
+2. **`app.listen()` primero**: el puerto responde de inmediato para que plataformas como Enzonic Deploy no cancelen el arranque (`COLD_START_TIMEOUT`).
+3. Creación de la base de datos si no existe (`src/config/initDatabase.js`), salvo `DB_INIT=false`.
+4. Sincronización de tablas con `sequelize.sync({ alter: true })`. **No hay migraciones**: cambiar un modelo altera las tablas existentes al arrancar. Con `DB_SYNC=none` se omite y solo se verifica la conexión (útil en producción).
+5. Seeds idempotentes de usuarios (solo se crean si el correo no existe):
    - `admin@comandapp.com` / `admin123` — rol `administrador`
    - `cocina@comandapp.com` / `cocina123` — rol `cocina`
    - Sobrescribibles con `ADMIN_PASSWORD` y `COCINA_PASSWORD`.
-5. Backfill: asigna un `accessToken` aleatorio a cualquier mesa que no tenga uno.
-6. `app.listen(PORT)`.
+6. Backfill: asigna un `accessToken` aleatorio a cualquier mesa que no tenga uno.
+
+Si la base de datos falla, se reintenta hasta 5 veces (15 s entre intentos) sin tumbar el proceso; `GET /capp/health` devuelve `{ ok: true, db: false }` hasta que la inicialización termina.
 
 ## Middlewares globales (`src/app.js`)
 
