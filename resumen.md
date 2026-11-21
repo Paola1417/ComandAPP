@@ -29,6 +29,8 @@ Documento de referencia del despliegue del API de **ComandAPP** en **Enzonic Dep
 | Base de datos | Enzonic Databases (MySQL 8.4) | `comandapp-rt6fw5.db.enzonic.com:3306` |
 | Imágenes de producto | `PUBLIC_BASE_URL/uploads/...` (disco efímero) o URL externa | — |
 
+> El repositorio fue renombrado a `Paola1417/ComandAPP` (GitHub redirige desde `SistemaInteligenteDePedidos`). Al conectar Enzonic, selecciona **`Paola1417/ComandAPP`**.
+
 ---
 
 ## 2. Decisión: Enzonic Deploy (no el servidor del panel)
@@ -130,12 +132,12 @@ COCINA_PASSWORD=cocina123
 
 1. **Subir el código** a `main` (los cambios de la sección 3 ya están aplicados).
 2. Entrar en `https://deploy.enzonic.com` e iniciar sesión con la misma cuenta de Enzonic.
-3. **New project** → conectar GitHub → instalar la *Enzonic GitHub App* en `Paola1417/SistemaInteligenteDePedidos`.
+3. **New project** → conectar GitHub → instalar la *Enzonic GitHub App* en `Paola1417/ComandAPP`.
 4. Configurar el proyecto:
 
    | Campo | Valor |
    |---|---|
-   | Repository | `Paola1417/SistemaInteligenteDePedidos` |
+   | Repository | `Paola1417/ComandAPP` |
    | Branch | `main` |
    | **Root directory** | `Backend/product-api` |
    | Framework | Express / Node (server mode) |
@@ -255,3 +257,16 @@ Backend/product-api/.env.example
 Backend/product-api/README.md
 resumen.md
 ```
+
+### Verificación ejecutada en local (contra la BD real de Enzonic)
+
+| Prueba | Resultado |
+|---|---|
+| Arranque con `DB_SYNC=none` | `Base de datos verificada` → `Conexión verificada` → seeds → `Servidor iniciado` |
+| `GET /capp/health` | `200 {"ok":true,...}` |
+| `POST /capp/auth/login` (`admin@comandapp.com`) | `200`, JWT válido |
+| `GET /capp/productos` con Bearer | `200` |
+| `POST /capp/productos/imagen` (multipart `imagen`) | `201` con URL `https://.../uploads/...` |
+| Cabeceras CORS / CORP / Cache-Control | `*` / `cross-origin` / `no-store` |
+
+**Commit:** `c87636d` en `main` (repositorio `Paola1417/ComandAPP`).
