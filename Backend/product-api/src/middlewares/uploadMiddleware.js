@@ -1,11 +1,36 @@
 const fs = require("fs");
+const os = require("os");
 const path = require("path");
 const crypto = require("crypto");
 const multer = require("multer");
 
-const UPLOADS_DIR = path.join(__dirname, "..", "..", "uploads");
+const PROJECT_UPLOADS_DIR = path.join(__dirname, "..", "..", "uploads");
 
-fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+// En plataformas como Enzonic Deploy el código es de solo lectura (/var/task).
+// Se busca un directorio escribible: UPLOADS_DIR → carpeta del proyecto → /tmp.
+const resolveUploadsDir = () => {
+  const candidates = [
+    process.env.UPLOADS_DIR,
+    PROJECT_UPLOADS_DIR,
+    path.join(os.tmpdir(), "comandapp-uploads"),
+  ].filter(Boolean);
+
+  for (const dir of candidates) {
+    try {
+      fs.mkdirSync(dir, { recursive: true });
+      fs.accessSync(dir, fs.constants.W_OK);
+      return dir;
+    } catch (error) {
+      console.warn(
+        `No se pudo usar "${dir}" para uploads: ${error.code || error.message}`,
+      );
+    }
+  }
+
+  throw new Error("No hay un directorio escribible para las imágenes subidas");
+};
+
+const UPLOADS_DIR = resolveUploadsDir();
 
 const EXTENSIONS = {
   "image/jpeg": ".jpg",

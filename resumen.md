@@ -10,7 +10,7 @@ Documento de referencia del despliegue del API de **ComandAPP** en **Enzonic Dep
 ┌──────────────────────────────┐        HTTPS + JWT (Bearer)        ┌────────────────────────────────┐
 │  Front (React + Vite)        │ ─────────────────────────────────► │  Backend (Express 5)           │
 │  GitHub Pages                │ ◄───────────────────────────────── │  Enzonic Deploy · server mode  │
-│  https://paola1417.github.io │        JSON / imágenes             │  https://<proyecto>.enzonic.dev│
+│  https://paola1417.github.io │        JSON / imágenes             │  https://comandapp.enzonic.dev│
 │  /ComandAPP/                 │                                    │  Backend/product-api           │
 └──────────────────────────────┘                                    └───────────────┬────────────────┘
                                                                                     │ TLS (3306)
@@ -25,7 +25,7 @@ Documento de referencia del despliegue del API de **ComandAPP** en **Enzonic Dep
 | Pieza | Dónde | URL / host |
 |---|---|---|
 | Front (staff + cliente) | GitHub Pages (workflow `deploy-front.yml`) | `https://paola1417.github.io/ComandAPP/` |
-| API | Enzonic Deploy (Express, *server mode*) | `https://<proyecto>.enzonic.dev` |
+| API | Enzonic Deploy (Express, *server mode*) | `https://comandapp.enzonic.dev` |
 | Base de datos | Enzonic Databases (MySQL 8.4) | `comandapp-rt6fw5.db.enzonic.com:3306` |
 | Imágenes de producto | `PUBLIC_BASE_URL/uploads/...` (disco efímero) o URL externa | — |
 
@@ -37,7 +37,7 @@ Documento de referencia del despliegue del API de **ComandAPP** en **Enzonic Dep
 
 | Criterio | Enzonic Deploy ✅ | Servidor del panel (`nodejs-generic`) |
 |---|---|---|
-| HTTPS / dominio | `https://<proyecto>.enzonic.dev` automático | IP:puerto, sin TLS (requiere dominio + proxy propio) |
+| HTTPS / dominio | `https://comandapp.enzonic.dev` automático | IP:puerto, sin TLS (requiere dominio + proxy propio) |
 | Compatible con GitHub Pages (HTTPS) | Sí | No sin trabajo extra (mixed content) |
 | Despliegue | `git push` / workflow | SFTP o `git clone` al arrancar |
 | Express | Sí, *server mode* | Sí, proceso persistente |
@@ -62,7 +62,8 @@ Documento de referencia del despliegue del API de **ComandAPP** en **Enzonic Dep
 | 8 | `Backend/product-api/src/config/database.js` | `pool: { max: 5, min: 0, idle: 10000, acquire: 60000 }`, `connectTimeout: 20000`, `retry: { max: 3 }` | La BD free duerme a los 5 min; el `acquire` amplio evita 500 al despertar |
 | 9 | `Backend/product-api/package.json` | `main: src/server.js`, `engines.node >= 20` | Entry point real y runtime fijo en el builder |
 | 10 | `.env` / `.env.example` | Nuevas variables `DB_SYNC`, `PUBLIC_BASE_URL`, `CORS_ORIGIN` | Configuración explícita por entorno |
-| 11 | `Backend/product-api/README.md` | Tabla de variables, health check y middlewares actualizados | Documentación alineada con el código |
+| 11 | `Backend/product-api/src/middlewares/uploadMiddleware.js` | Resuelve un directorio escribible (`UPLOADS_DIR` → `uploads/` → `/tmp`) en vez de fallar con `ENOENT` en `/var/task` | En Deploy el código es de solo lectura: el `mkdirSync` tumbaba el proceso al arrancar |
+| 12 | `Backend/product-api/README.md` | Tabla de variables, health check y middlewares actualizados | Documentación alineada con el código |
 
 ---
 
@@ -79,8 +80,9 @@ DB_NAME=main
 DB_SSL=true
 
 DB_SYNC=none
-PUBLIC_BASE_URL=https://<proyecto>.enzonic.dev
+PUBLIC_BASE_URL=https://comandapp.enzonic.dev
 CORS_ORIGIN=https://paola1417.github.io
+UPLOADS_DIR=/tmp/comandapp-uploads
 
 JWT_SECRET=<64 caracteres aleatorios nuevos>
 JWT_EXPIRES_IN=8h
@@ -104,6 +106,7 @@ DB_SSL=true
 DB_SYNC=alter
 PUBLIC_BASE_URL=
 CORS_ORIGIN=
+UPLOADS_DIR=
 JWT_SECRET=comandapp_super_secreto_2024
 JWT_EXPIRES_IN=8h
 BCRYPT_SALT_ROUNDS=10
@@ -115,7 +118,7 @@ COCINA_PASSWORD=cocina123
 
 | Variable | Valor | Efecto |
 |---|---|---|
-| `VITE_API_URL` | `https://<proyecto>.enzonic.dev` | `src/api/client.js` le añade `/capp` |
+| `VITE_API_URL` | `https://comandapp.enzonic.dev` | `src/api/client.js` le añade `/capp` |
 | `VITE_PUBLIC_URL` | `https://paola1417.github.io/ComandAPP` | Base de las URLs de mesa (`/#/pedido/<token>`) |
 
 > Vite inyecta estas variables **en tiempo de build**: cambiarlas exige volver a ejecutar el workflow.
@@ -158,7 +161,7 @@ COCINA_PASSWORD=cocina123
    Servidor iniciado en puerto <asignado>
    ```
 
-7. Anotar la URL pública (`https://<proyecto>.enzonic.dev`) y **volver a desplegar** si `PUBLIC_BASE_URL` se definió después del primer build.
+7. Anotar la URL pública (`https://comandapp.enzonic.dev`) y **volver a desplegar** si `PUBLIC_BASE_URL` se definió después del primer build.
 8. Actualizar las variables del front (sección 4.3).
 9. **Actions → Deploy front to GitHub Pages → Run workflow** y hacer *hard refresh* en la página publicada.
 
@@ -169,9 +172,9 @@ COCINA_PASSWORD=cocina123
 ### 6.1 API directa (PowerShell)
 
 ```powershell
-curl.exe https://<proyecto>.enzonic.dev/capp/health
-curl.exe https://<proyecto>.enzonic.dev/capp/pedido/mesas
-curl.exe -X POST https://<proyecto>.enzonic.dev/capp/auth/login `
+curl.exe https://comandapp.enzonic.dev/capp/health
+curl.exe https://comandapp.enzonic.dev/capp/pedido/mesas
+curl.exe -X POST https://comandapp.enzonic.dev/capp/auth/login `
   -H "Content-Type: application/json" `
   -d '{\"correo\":\"admin@comandapp.com\",\"password\":\"admin123\"}'
 ```
@@ -223,6 +226,8 @@ curl.exe -X POST https://<proyecto>.enzonic.dev/capp/auth/login `
 | Síntoma | Causa probable | Solución |
 |---|---|---|
 | El proceso no arranca / no responde | No escucha el puerto inyectado | Verificar `PORT`/`SERVER_PORT` en logs; no fijar `PORT` a mano |
+| `ENOENT ... mkdir '/var/task/uploads'` | El código se monta en solo lectura | Ya resuelto: `uploadMiddleware` usa `UPLOADS_DIR` o `/tmp` |
+| `unknown database host` | Host/credenciales obsoletas en Enzonic Databases | Copiar de nuevo `DB_HOST`/`DB_USER`/`DB_PASSWORD` desde el panel |
 | `ER_SECURE_TRANSPORT_REQUIRED` | Falta TLS | `DB_SSL=true` |
 | Timeout al conectar | BD dormida | Reintentar; revisar `acquire`/`connectTimeout` |
 | Login falla con `admin123` | Contraseña distinta en la BD | Usar la contraseña real o crearla por API/UI |
@@ -251,6 +256,7 @@ Backend/product-api/src/server.js
 Backend/product-api/src/app.js
 Backend/product-api/src/config/database.js
 Backend/product-api/src/controllers/product.controller.js
+Backend/product-api/src/middlewares/uploadMiddleware.js
 Backend/product-api/package.json
 Backend/product-api/.env
 Backend/product-api/.env.example
@@ -268,5 +274,6 @@ resumen.md
 | `GET /capp/productos` con Bearer | `200` |
 | `POST /capp/productos/imagen` (multipart `imagen`) | `201` con URL `https://.../uploads/...` |
 | Cabeceras CORS / CORP / Cache-Control | `*` / `cross-origin` / `no-store` |
+| Directorio de uploads no escribible | Cae a `uploads/` o `/tmp` sin tumbar el proceso |
 
-**Commit:** `c87636d` en `main` (repositorio `Paola1417/ComandAPP`).
+**Commits:** `c87636d`, `24b15fd` y el fix de `uploadMiddleware` en `main` (repositorio `Paola1417/ComandAPP`).

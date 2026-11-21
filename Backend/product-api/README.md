@@ -106,6 +106,7 @@ Registradas en `src/models/associations.js`. **Solo se activan si se hace `requi
 | `DB_SYNC` | `alter` (defecto) sincroniza tablas al arrancar; `none` solo verifica la conexión (recomendado en producción) |
 | `PUBLIC_BASE_URL` | URL pública del API (p. ej. `https://mi-api.enzonic.dev`) usada para construir las URLs de las imágenes subidas. Vacío = se deduce del request |
 | `CORS_ORIGIN` | Orígenes permitidos separados por coma. Vacío = todos |
+| `UPLOADS_DIR` | Directorio escribible para las imágenes subidas. Vacío = `uploads/` del proyecto (o el temporal si el código es de solo lectura) |
 | `JWT_SECRET` | Clave para firmar tokens JWT |
 | `JWT_EXPIRES_IN` | Expiración del token (defecto: `8h`) |
 | `BCRYPT_SALT_ROUNDS` | Rounds de bcrypt (defecto: `10`) |
