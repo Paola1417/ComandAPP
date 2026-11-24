@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
+import { logoUrl } from "../../utils/assets";
 import styles from "./NavBar.module.css";
 
 const NavBar = () => {
@@ -43,7 +44,7 @@ const NavBar = () => {
           title="ComandAPP"
         >
           <img
-            src="/favicon.svg"
+            src={logoUrl}
             alt="Logo ComandAPP"
             className={styles["logo-img"]}
           />

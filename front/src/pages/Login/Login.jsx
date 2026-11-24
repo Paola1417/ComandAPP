@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { logoUrl } from '../../utils/assets';
 import styles from './Login.module.css';
 
 const Login = () => {
@@ -32,7 +33,7 @@ const Login = () => {
     <div className={styles['login-container']}>
       <div className={styles['login-card']}>
         <div className={styles['login-header']}>
-          <img src="/favicon.svg" alt="Logo ComandAPP" className={styles['login-logo']} />
+          <img src={logoUrl} alt="Logo ComandAPP" className={styles['login-logo']} />
           <h1>ComandAPP</h1>
           <p>Ingreso para el personal</p>
         </div>
